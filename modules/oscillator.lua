@@ -54,7 +54,7 @@ function Oscillator:ampAt(nth)
     end
 
     -- Normalize the amplitude
-    return amp/#notes
+    return amp--/#notes
 end
 
 return Oscillator

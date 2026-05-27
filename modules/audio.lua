@@ -146,21 +146,23 @@ end
 function Audio:play()
     local buffers = self:chopBuffer()
 
-    for _, buffer in pairs(buffers) do
-        -- Check if the audio backlog is overflown
-        -- and queue the overflown backlog for
-        -- later playing.
-        -- I try to minimize this case with 
-        -- a sleep(x) function below.
-        while not speaker.playAudio(buffer) do
-            os.pullEvent('speaker_audio_empty')
-        end
+    for _=1, 2 do
+        for _, buffer in pairs(buffers) do
+            -- Check if the audio backlog is overflown
+            -- and queue the overflown backlog for
+            -- later playing.
+            -- I try to minimize this case with 
+            -- a sleep(x) function below.
+            while not speaker.playAudio(buffer) do
+                os.pullEvent('speaker_audio_empty')
+            end
 
-        -- Sleep for x seconds to wait 
-        -- for empty backlog space.
-        -- If the backlog in too big,
-        -- new chunks will be dropped!
-        sleep(self.tempo/60/4)
+            -- Sleep for x seconds to wait 
+            -- for empty backlog space.
+            -- If the backlog in too big,
+            -- new chunks will be dropped!
+            sleep(self.tempo/60/4)
+        end
     end
 end
 
