@@ -23,27 +23,33 @@ end
 function Sheet:readComposition()
     local composition = require(self.sheetDir..'composition')
 
-    self.sampleRate = 48000/(composition.tempo/60)/4 -- Samplerate adjusted for eigth notes
+    -- Originally 48000/(tempo/60)/4
+    -- Adjusted to eigth note length
+    -- One eigth note consists of "sampleRate" 
+    -- or 720.000/tempo values
+    self.sampleRate = 720000/composition.tempo
     self.audio = Audio:new(composition.tempo)
 
     for _, osc in pairs(composition.oscillators) do
-        self.audio:insertOscillators(self:readSheet(osc))
+        self.currentOsc = osc
+        self.audio:insertOscillators(self:readSheet())
     end
 end
 
-function Sheet:readSheet(osc)
-    local path = self.sheetDir..osc.name..'.sheet'
+function Sheet:readSheet()
+    local path = self.sheetDir..self.currentOsc.name..'.sheet'
 
     self.cellMatrix = self:getSheet(path)
     self.prevNotes = {}
-    self.currentOsc = osc
 
     local oscillator = Oscillator:new(
-        osc.amp,
-        osc.waveform,
-        osc.velocity
+        self.currentOsc.amp,
+        self.currentOsc.waveform,
+        self.currentOsc.velocity
     )
 
+    -- Starting from the 3rd line to 
+    -- ignore the octave and note lines
     for y=3, #self.cellMatrix do
         local notes = {}
 
@@ -59,7 +65,6 @@ function Sheet:readSheet(osc)
         end
 
         self.prevNotes = notes
-
         oscillator:appendNotes(notes)
     end
 

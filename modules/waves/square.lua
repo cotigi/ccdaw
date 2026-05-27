@@ -1,4 +1,3 @@
-local Sine = require('modules.waves.sine')
 local Square = {}
 
 function Square.at(freq, t)

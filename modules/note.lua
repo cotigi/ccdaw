@@ -50,7 +50,11 @@ function Note:new(
 end
 
 function Note:getTime()
+    -- Primary time used for waveform 
+    -- amplitude calculation
     local pTime = self.sampleIndex/48000
+    -- Velocity time used for amplitude 
+    -- velocity calculation
     local vTime = self.sampleIndex/self.sampleRate
 
     self:next()
