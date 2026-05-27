@@ -1,4 +1,4 @@
 local Sheet = require('modules.sheet')
 
-local test = Sheet:new('folyo')
+local test = Sheet:new('polka')
 test:play()
