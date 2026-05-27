@@ -35,7 +35,9 @@ function Sheet:readSheet(osc)
     local path = self.sheetDir..osc.name..'.sheet'
 
     self.cellMatrix = self:getSheet(path)
-    self.noteMatrix = {}
+    self.prevNotes = {}
+    self.currentOsc = osc
+
     local oscillator = Oscillator:new(
         osc.amp,
         osc.waveform,
@@ -46,7 +48,7 @@ function Sheet:readSheet(osc)
         local notes = {}
 
         for x=1, #self.cellMatrix[y] do
-            local note = self:processCell(x, y, osc)
+            local note = self:processCell(x, y)
 
             if note ~= nil then
                 table.insert(
@@ -56,10 +58,7 @@ function Sheet:readSheet(osc)
             end
         end
 
-        table.insert(
-            self.noteMatrix,
-            notes
-        )
+        self.prevNotes = notes
 
         oscillator:appendNotes(notes)
     end
@@ -67,23 +66,20 @@ function Sheet:readSheet(osc)
     return oscillator
 end
 
-function Sheet:processCell(x, y, osc)
+function Sheet:processCell(x, y)
     local cell = self.cellMatrix[y][x]
     local note = nil
 
     if cell ~= '|' then
         local key = self.cellMatrix[1][x]..self.cellMatrix[2][x]
 
-        if cell == '.' and #self.noteMatrix ~= 0 then
-            note = self:lengthenNote(
-                self.noteMatrix[#self.noteMatrix],
-                key
-            )
+        if cell == '.' and self.prevNotes ~= {} then
+            note = self:lengthenNote(key)
         else
             note = Note:new(
                 nil,
                 key,
-                osc.amp,
+                self.currentOsc.amp,
                 self.sampleRate
             )
 
@@ -93,8 +89,8 @@ function Sheet:processCell(x, y, osc)
     return note
 end
 
-function Sheet:lengthenNote(arr, key)
-    for _, note in pairs(arr) do
+function Sheet:lengthenNote(key)
+    for _, note in pairs(self.prevNotes) do
         if note.key == key then
             local origin = nil
 

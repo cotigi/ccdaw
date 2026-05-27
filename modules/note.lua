@@ -1,6 +1,7 @@
 local Note = {}
 Note.__index = Note
 
+-- 0th octave freqs
 local NOTES = {
     c = 16.35,
     C = 17.32,
@@ -10,7 +11,8 @@ local NOTES = {
     f = 21.83,
     F = 23.12,
     g = 24.5,
-    G = 25.96, a = 27.5,
+    G = 25.96,
+    a = 27.5,
     A = 29.14,
     b = 30.87
 }
@@ -40,11 +42,8 @@ function Note:new(
         o.freq = NOTES[note] * math.pow(2, octave)
 
         o.sampleRate = sampleRate
-        o.sampleStep = 1-- sampleRate/48000
+        o.sampleStep = 1
         o.sampleIndex = 0
-
-        o.vTime = 0
-        o.pTime = 0
     end
 
     return o
