@@ -11,8 +11,6 @@ function Sheet:new(name)
 
     o.sheetDir = '/'..fs.getDir(shell.getRunningProgram())..'/sheet/'..name..'/'
     o.name = name
-    o.length = 0
-    o.skips = 0 -- Sheet comment counter
     o:readComposition()
 
     return o
@@ -25,14 +23,12 @@ end
 function Sheet:readComposition()
     local composition = require(self.sheetDir..'composition')
 
+    self.sampleRate = 48000/(composition.tempo/60)/4 -- Samplerate adjusted for eigth notes
     self.audio = Audio:new(composition.tempo)
-    self.sampleRate = 48000/(composition.tempo/60)/4--/2
 
     for _, osc in pairs(composition.oscillators) do
         self.audio:insertOscillators(self:readSheet(osc))
     end
-
-    self.audio.length = self.length
 end
 
 function Sheet:readSheet(osc)
@@ -46,19 +42,11 @@ function Sheet:readSheet(osc)
         osc.velocity
     )
 
-    local length = 0
-
-    for y=4, #self.cellMatrix do
+    for y=3, #self.cellMatrix do
         local notes = {}
 
         for x=1, #self.cellMatrix[y] do
             local note = self:processCell(x, y, osc)
-            --[[
-            table.insert(
-                self.notes,
-                self:processCell(x, ay)
-            )
-            ]]--
 
             if note ~= nil then
                 table.insert(
@@ -73,18 +61,8 @@ function Sheet:readSheet(osc)
             notes
         )
 
-        --oscillator:insertNotesAt(y-3-self.skips, notes)
-        oscillator:insertNotesAt(
-            #oscillator.pianoRoll+1,
-            notes
-        )
-        length = length+1
+        oscillator:appendNotes(notes)
     end
-
-    self.length = math.max(
-        self.length,
-        length
-    )
 
     return oscillator
 end
@@ -104,9 +82,8 @@ function Sheet:processCell(x, y, osc)
         else
             note = Note:new(
                 nil,
-                osc.amp,
                 key,
-                (y-4) * self.sampleRate,
+                osc.amp,
                 self.sampleRate
             )
 
@@ -129,7 +106,6 @@ function Sheet:lengthenNote(arr, key)
 
             return Note:new(
                 origin,
-                0,
                 key
             )
         end
@@ -161,14 +137,10 @@ end
 function Sheet.stringToArray(s)
     local arr = {}
 
-    for i=1, #s do
+    for c in s:gmatch('.') do
         table.insert(
             arr,
-            string.sub(
-                s,
-                i,
-                i
-            )
+            c
         )
     end
 

@@ -10,17 +10,15 @@ local NOTES = {
     f = 21.83,
     F = 23.12,
     g = 24.5,
-    G = 25.96,
-    a = 27.5,
+    G = 25.96, a = 27.5,
     A = 29.14,
     b = 30.87
 }
 
 function Note:new(
         origin,
-        amp,
         key,
-        sampleStart,
+        amp,
         sampleRate
     )
     local o = {}
@@ -37,14 +35,10 @@ function Note:new(
 
     o.key = key
 
-
     if origin == nil then
-        o.length = 1
         o.amp = amp
         o.freq = NOTES[note] * math.pow(2, octave)
 
-        o.sampleStart = sampleStart -- Starting sample index
-        o.sampleEnd = sampleStart + o.length*sampleRate -- Ending sample index
         o.sampleRate = sampleRate
         o.sampleStep = 1-- sampleRate/48000
         o.sampleIndex = 0
@@ -56,14 +50,7 @@ function Note:new(
     return o
 end
 
-function Note:addLength()
-    self.length = self.length + 1
-
-    self.sampleEnd = self.sampleStart + self.length*self.sampleRate
-end
-
 function Note:getTime()
-    --local time = self.time
     local pTime = self.sampleIndex/48000
     local vTime = self.sampleIndex/self.sampleRate
 
@@ -74,10 +61,6 @@ end
 
 function Note:next()
     self.sampleIndex = self.sampleIndex + self.sampleStep
-
-    -- self.time = self.sampleIndex/self.sampleRate
-
-    -- print(self.sampleIndex..' -> '..self.sampleRate..' => '..self.time)
 end
 
 return Note

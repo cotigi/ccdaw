@@ -17,58 +17,14 @@ function Oscillator:new(
     return o
 end
 
-function Oscillator:insertNotesAt(nth, notes)
-    -- Nth position is prefixed with empty ones
-    if #self.pianoRoll+1 < nth then
-        -- Fill empty positions
-        for _=1, nth-#self.pianoRoll-1 do
-            table.insert(
-                self.pianoRoll,
-                {}
-            )
-        end
-
-        -- Insert notes at nth position
-        table.insert(
-            self.pianoRoll,
-            notes
-        )
-
-    -- Nth position is exactly the next
-    elseif #self.pianoRoll+1 == nth then
-        table.insert(
-            self.pianoRoll,
-            notes
-        )
-    -- Nth position should be concatinated
-    -- with the new notes
-    else
-        self.pianoRoll[nth] = {
-            table.unpack(self.pianoRoll[nth]),
-            table.unpack(notes)
-        }
-    end
+function Oscillator:appendNotes(notes)
+    table.insert(
+        self.pianoRoll,
+        notes
+    )
 end
 
-function Oscillator:getNotesAt(nth)
-    local notes = {}
-
-    for _, col in pairs(self.pianoRoll) do
-        for _, note in pairs(col) do
-            if note.sampleStart <= nth and
-               nth <= note.sampleEnd then
-                table.insert(
-                    notes,
-                    note
-                )
-            end
-        end
-    end
-
-    return notes
-end
-
-function Oscillator:ampAt(nth, sampleIndex)
+function Oscillator:ampAt(nth)
     local notes = self.pianoRoll[nth]
     if notes == nil then return 0 end
     if #notes == 0 then return 0 end

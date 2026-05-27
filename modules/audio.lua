@@ -8,29 +8,11 @@ function Audio:new(tempo)
     setmetatable(o, self)
 
     o.tempo = tempo
-    o.sampleIndex = 0
-    o.sampleRate = Audio.calcSampleRate(o.tempo)
-    o.sampleStep = o.sampleRate/48000
     o.oscillators = {}
-    o.length = 0
+
+    o.eigthNote = 48000/(tempo/60)/4
 
     return o
-end
-
-function Audio:time()
-    self.sampleIndex = self.sampleIndex+self.sampleStep
-
-    --[[
-    if self.sampleIndex > self.sampleRate then
-        self.sampleIndex = 0
-    end
-    ]]--
-
-    return self.sampleIndex/self.sampleRate
-end
-
-function Audio.calcSampleRate(tempo)
-    return 48000/(tempo/60)/4--/2
 end
 
 function Audio:insertOscillators(...)
@@ -42,16 +24,25 @@ function Audio:insertOscillators(...)
     end
 end
 
-function Audio:dumpOscillators()
-    self.oscillators = {}
-end
-
-function Audio:genAmp(nth, sampleIndex, t)
-    local amp = 0
-    local nullCounter = -1
+function Audio:getLength()
+    local length = 0
 
     for _, osc in pairs(self.oscillators) do
-        local oscAmp = osc:ampAt(nth, sampleIndex)
+        length = math.max(
+            length,
+            #osc.pianoRoll
+        )
+    end
+
+    return length
+end
+
+function Audio:genAmp(nth)
+    local amp = 0
+    local nullCounter = 0
+
+    for _, osc in pairs(self.oscillators) do
+        local oscAmp = osc:ampAt(nth)
 
         if oscAmp == 0 then
             nullCounter = nullCounter + 1
@@ -60,62 +51,75 @@ function Audio:genAmp(nth, sampleIndex, t)
         amp = amp + oscAmp
     end
 
-    return math.floor(127*amp/(#self.oscillators-nullCounter))
+    return 127*amp/math.max(
+        1,
+        #self.oscillators-nullCounter
+    )
 end
 
 function Audio:genBuffer()
     local buffer = {}
 
-    for n=1, self.length do
-        for minorIndex=0, self.sampleRate do
+    -- Number of eigth notes in the sheet
+    for nth=1, self:getLength() do
+        -- Number of samples an eigth note consists of
+        for _=1, self.eigthNote do
+            -- Clamp amplitude to [-128; 127]
+            local amp = math.max(
+                -128,
+                math.min(
+                    127,
+                    self:genAmp(nth)
+                )
+            )
+
             table.insert(
                 buffer,
-                self:genAmp(
-                    n,
-                    (n-1)*self.sampleRate + minorIndex,
-                    self:time()
-                )
+                amp
             )
         end
     end
-
 
     return buffer
 end
 
-function Audio:getBuffers()
+function Audio:chopBuffer()
     local buffer = self:genBuffer()
     local buffers = {}
-    local base = 1
 
-    for i=1, #buffer do
+    local totalBuffers = math.floor(#buffer/48000)
+    local bottom = 0
+    local top = 0
 
-        if i%48000 == 0 then
-            table.insert(
-                buffers,
-                {table.unpack(buffer, base, i)}
-            )
+    for n=0, totalBuffers-1 do
+        bottom = n*48000 + 1
+        top = (n+1)*48000
 
-            base = i+1
-
-            if #buffer-i < 48000 then
-                table.insert(
-                    buffers,
-                    {table.unpack(buffer, i+1, #buffer)}
-                )
-
-                goto done
-            end
-        end
+        table.insert(
+            buffers,
+            {
+                table.unpack(buffer, bottom, top)
+            }
+        )
     end
 
-    ::done::
+    if #buffer%48000 ~= 0 then
+        bottom = totalBuffers*48000 + 1
+        top = #buffer
+
+        table.insert(
+            buffers,
+            {
+                table.unpack(buffer, bottom, top)
+            }
+        )
+    end
 
     return buffers
 end
 
 function Audio:play()
-    local buffers = self:getBuffers()
+    local buffers = self:chopBuffer()
 
     for _, buffer in pairs(buffers) do
         while not speaker.playAudio(buffer) do
