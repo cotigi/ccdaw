@@ -5,19 +5,19 @@ local EaseOut = require('modules.velocities.easeOut')
 local Const = require('modules.velocities.const')
 
 local Sheet = {
-    tempo = 120,
+    tempo = 90,
     oscillators = {
         {
             name = 'chords',
             waveform = Square,
             velocity = EaseOut,
-            amp = 0.3
+            amp = 0.7
         },
         {
             name = 'bass',
             waveform = Saw,
             velocity = Const,
-            amp = 0.2
+            amp = 0.9
         }
     }
 }

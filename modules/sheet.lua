@@ -10,6 +10,7 @@ function Sheet:new(name)
     setmetatable(o, self)
 
     o.sheetDir = '/'..fs.getDir(shell.getRunningProgram())..'/sheet/'..name..'/'
+
     o.name = name
     o:readComposition()
 
@@ -21,6 +22,7 @@ function Sheet:play()
 end
 
 function Sheet:readComposition()
+    print('Reading')
     local composition = require(self.sheetDir..'composition')
 
     -- Originally 48000/(tempo/60)/4
@@ -75,11 +77,22 @@ function Sheet:processCell(x, y)
     local cell = self.cellMatrix[y][x]
     local note = nil
 
-    if cell ~= '|' then
-        local key = self.cellMatrix[1][x]..self.cellMatrix[2][x]
+    if cell == '|' then return note end
 
-        if cell == '.' and self.prevNotes ~= {} then
-            note = self:lengthenNote(key)
+    local key = self.cellMatrix[1][x]..self.cellMatrix[2][x]
+
+    -- Check for sustain note
+    if cell == '.' then
+        local origin = self:containsKey(self.prevNotes, key)
+
+        -- If origin note is nil,
+        -- then I process the sustain
+        -- as an impact note.
+        if origin ~= nil then
+            note = Note:new(
+                origin,
+                key
+            )
         else
             note = Note:new(
                 nil,
@@ -87,28 +100,30 @@ function Sheet:processCell(x, y)
                 self.currentOsc.amp,
                 self.sampleRate
             )
-
         end
+    -- Check for impact note
+    elseif cell == 'X' then
+        note = Note:new(
+            nil,
+            key,
+            self.currentOsc.amp,
+            self.sampleRate
+        )
     end
 
     return note
 end
 
-function Sheet:lengthenNote(key)
-    for _, note in pairs(self.prevNotes) do
+function Sheet:containsKey(arr, key)
+    for _, note in pairs(arr) do
         if note.key == key then
-            local origin = nil
+            local origin = note.origin
 
             if note.isOrigin then
                 origin = note
-            else
-                origin = note.origin
             end
 
-            return Note:new(
-                origin,
-                key
-            )
+            return origin
         end
     end
 

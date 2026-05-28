@@ -3,13 +3,13 @@ local Square = require('modules.waves.square')
 local EaseOut = require('modules.velocities.easeOut')
 
 local Sheet = {
-    tempo = 60,
+    tempo = 80,
     oscillators = {
         {
             name = 'lead',
-            waveform = Sine, --Square,
+            waveform = Square,
             velocity = EaseOut,
-            amp = 0.8
+            amp = 1
         }
     }
 }

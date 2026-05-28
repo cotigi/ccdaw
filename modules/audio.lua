@@ -98,7 +98,9 @@ function Audio:genBuffer()
 end
 
 function Audio:chopBuffer()
+    print('Building')
     local buffer = self:genBuffer()
+    print('Choping')
     local buffers = {}
 
     -- Number of buffers I can 
@@ -146,7 +148,8 @@ end
 function Audio:play()
     local buffers = self:chopBuffer()
 
-    for _=1, 2 do
+    print('Playing')
+    for _=1, 1 do
         for _, buffer in pairs(buffers) do
             -- Check if the audio backlog is overflown
             -- and queue the overflown backlog for
