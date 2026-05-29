@@ -11,13 +11,19 @@ local Sheet = {
             name = 'chords',
             waveform = Square,
             velocity = EaseOut,
-            amp = 0.7
+            amp = 0.7,
+            sequence = {
+                'chords'
+            }
         },
         {
             name = 'bass',
             waveform = Saw,
             velocity = Const,
-            amp = 0.9
+            amp = 0.9,
+            sequence = {
+                'bass'
+            }
         }
     }
 }

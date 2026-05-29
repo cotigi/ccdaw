@@ -11,13 +11,19 @@ local Sheet = {
             name = 'lead',
             waveform = Sine,
             velocity = EaseOut,
-            amp = 1
+            amp = 1,
+            sequence = {
+                'lead'
+            }
         },
         {
             name = 'chords',
             waveform = Triangle,
             velocity = Const,
-            amp = 0.9
+            amp = 0.9,
+            sequence = {
+                'chords'
+            }
         }
     }
 }
