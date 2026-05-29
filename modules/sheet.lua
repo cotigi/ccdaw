@@ -34,21 +34,37 @@ function Sheet:readComposition()
 
     for _, osc in pairs(composition.oscillators) do
         self.currentOsc = osc
-        self.audio:insertOscillators(self:readSheet())
+        self.audio:insertOscillators(self:readSequence())
     end
 end
 
-function Sheet:readSheet()
-    local path = self.sheetDir..self.currentOsc.name..'.sheet'
-
-    self.cellMatrix = self:getSheet(path)
-    self.prevNotes = {}
-
+function Sheet:readSequence()
     local oscillator = Oscillator:new(
         self.currentOsc.amp,
         self.currentOsc.waveform,
         self.currentOsc.velocity
     )
+
+
+    -- Go through all the patterns specified
+    -- in the given sequence array.
+    for _, pattern in pairs(self.currentOsc.sequence) do
+        -- Example directory structure:
+        -- <path_to_main>/sheet/<sheet_name>/<osc_name>/<pattern_name>.sheet
+        local path = self.sheetDir..self.currentOsc.name..'/'..pattern..'.sheet'
+        print(path)
+
+        -- Tables are always passed as reference.
+        -- No need to return.
+        self:readSheet(oscillator, path)
+    end
+
+    return oscillator
+end
+
+function Sheet:readSheet(oscillator, path)
+    self.cellMatrix = self:getSheet(path)
+    self.prevNotes = {}
 
     -- Starting from the 3rd line to 
     -- ignore the octave and note lines
@@ -69,8 +85,6 @@ function Sheet:readSheet()
         self.prevNotes = notes
         oscillator:appendNotes(notes)
     end
-
-    return oscillator
 end
 
 function Sheet:processCell(x, y)
