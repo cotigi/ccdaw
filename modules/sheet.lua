@@ -52,7 +52,6 @@ function Sheet:readSequence()
         -- Example directory structure:
         -- <path_to_main>/sheet/<sheet_name>/<osc_name>/<pattern_name>.sheet
         local path = self.sheetDir..self.currentOsc.name..'/'..pattern..'.sheet'
-        print(path)
 
         -- Tables are always passed as reference.
         -- No need to return.

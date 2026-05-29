@@ -1,7 +1,7 @@
-local EaseOut = {}
+local Const = {}
 
-function EaseOut.at(t)
+function Const.at(t)
     return 1
 end
 
-return EaseOut
+return Const

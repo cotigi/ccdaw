@@ -1,3 +1,6 @@
+local Sine = require('modules.waves.sine')
+local Const = require('modules.velocities.const')
+
 local Oscillator = {}
 Oscillator.__index = Oscillator
 
@@ -9,9 +12,14 @@ function Oscillator:new(
     local o = {}
     setmetatable(o, self)
 
-    o.amp = amp
-    o.waveform = waveform
-    o.velocity = velocity
+    -- If an argument is nil then
+    -- use the default value:
+    --  - waveform -> Sine
+    --  - velocity -> Const
+    --  - amp      -> 1
+    o.waveform = waveform or Sine
+    o.velocity = velocity or Const
+    o.amp = amp or 1
     o.pianoRoll = {}
 
     return o
